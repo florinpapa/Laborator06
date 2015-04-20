@@ -1,7 +1,11 @@
 package ro.pub.cs.systems.pdsd.lab06.ftpserverwelcomemessage.views;
 
+import java.io.BufferedReader;
+import java.net.Socket;
+
 import ro.pub.cs.systems.pdsd.lab06.ftpserverwelcomemessage.R;
 import ro.pub.cs.systems.pdsd.lab06.ftpserverwelcomemessage.general.Constants;
+import ro.pub.cs.systems.pdsd.lab06.ftpserverwelcomemessage.general.Utilities;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,8 +29,36 @@ public class FTPServerWelcomeMessageActivity extends Activity {
 				
 				// TODO: exercise 4
 				// open socket with FTPServerAddress (taken from FTPServerAddressEditText edit text) and port (Constants.FTP_PORT = 21)
+				String hostname = FTPServerAddressEditText.getText().toString();
+				int port = Constants.FTP_PORT;
+				Socket socket = new Socket(hostname, port);
+				
 				// get the BufferedReader attached to the socket (call to the Utilities.getReader() method)
+				BufferedReader br = Utilities.getReader(socket);
+				
 				// should the line start with Constants.FTP_MULTILINE_START_CODE, the welcome message is processed
+				String line = br.readLine();
+				String content = "";
+				if (line.startsWith(Constants.FTP_MULTILINE_START_CODE)) {
+					content += line.subSequence(4, line.length());
+					
+					line = br.readLine();
+					while (!line.startsWith(Constants.FTP_MULTILINE_END_CODE1)) {
+						content += line;
+						line = br.readLine();
+					}
+					final String str1 = content;
+					welcomeMessageTextView.post(new Runnable() {
+						
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							welcomeMessageTextView.setText(str1);
+						}
+					});
+				}
+				
+				socket.close();
 				// read lines from server while 
 				// - the value is different from Constants.FTP_MULTILINE_END_CODE1
 				// - the value does not start with Constants.FTP_MULTILINE_START_CODE2

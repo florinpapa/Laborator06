@@ -1,9 +1,11 @@
 package ro.pub.cs.systems.pdsd.lab06.clientservercommunication.views;
 
+import java.io.BufferedReader;
 import java.net.Socket;
 
 import ro.pub.cs.systems.pdsd.lab06.clientservercommunication.R;
 import ro.pub.cs.systems.pdsd.lab06.clientservercommunication.general.Constants;
+import ro.pub.cs.systems.pdsd.lab06.clientservercommunication.general.Utilities;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,12 +31,47 @@ public class ClientFragment extends Fragment {
 				
 				// TODO: exercise 6b
 				// - reset the content of serverMessageTextView (on UI thread !!!)
+				serverMessageTextView.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						serverMessageTextView.setText("");
+					}
+				});
+				
 				// - get the connection parameters (serverAddress from serverAddressEditText, serverPort from serverPortEditText)
+				String servAddr = serverAddressEditText.getText().toString();
+				String servPort = serverPortEditText.getText().toString();
+				
 				// - open a socket to the server
+				Socket socket = new Socket(servAddr, Integer.parseInt(servPort));
+				
 				// - get the BufferedReader object in order to read from the socket (use Utilities.getReader())
+				BufferedReader br = Utilities.getReader(socket);
+				
 				// - while the line that was read is not null (EOF was not sent), append the content to serverMessageTextView (on UI thread !!!)
+				String line = br.readLine();
+				Log.v("TEEEEST", "Gets Here");
+				String text = "";
+				while (line != null) {
+					text += line;
+					Log.v("TEEEEST", text);
+					line = br.readLine();
+				}
+				Log.v("TEEEEST", "Gets Here");
+				final String txt = text;
+				serverMessageTextView.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						serverMessageTextView.setText(txt);
+					}
+				});
+				
 				// - close the socket to the server	
-
+				socket.close();
 			} catch (Exception exception) {
 				Log.e(Constants.TAG, "An exception has occurred: "+exception.getMessage());
 				if (Constants.DEBUG) {
